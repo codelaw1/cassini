@@ -4,6 +4,7 @@ require (
 	github.com/QOSGroup/qbase v0.0.10
 	github.com/QOSGroup/qos v0.0.4-0.20190108073207-1fc21c111f3a
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
+	github.com/cloudflare/cfssl v0.0.0-20180323000720-5d63dbd981b5 // indirect
 	github.com/coreos/bbolt v0.0.0-20180912205654-7ee3ded59d48 // indirect
 	github.com/coreos/etcd v3.3.10+incompatible
 	github.com/coreos/go-systemd v0.0.0-20180511133405-39ca1b05acc7 // indirect
@@ -14,17 +15,26 @@ require (
 	github.com/golang/groupcache v0.0.0-20181024230925-c65c006176ff // indirect
 	github.com/google/btree v0.0.0-20180124185431-e89373fe6b4a // indirect
 	github.com/gorilla/websocket v1.4.0
+	github.com/google/certificate-transparency-go v1.0.21 // indirect
+<!--
+	github.com/google/certificate-transparency-go v1.0.21 // indirect
+	github.com/gorilla/websocket v1.2.0
+	-->
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.4.1 // indirect
+	github.com/hyperledger/fabric-sdk-go v1.0.0-alpha4
 	github.com/jonboulle/clockwork v0.1.0 // indirect
+	github.com/miekg/pkcs11 v0.0.0-20181204074848-79c216b7cb4d // indirect
 	github.com/nats-io/gnatsd v1.3.0 // indirect
 	github.com/nats-io/go-nats v1.6.0
 	github.com/nats-io/nuid v1.0.0 // indirect
 	github.com/pkg/errors v0.8.0
+	github.com/securekey/fabric-examples v0.0.0-20190128203140-4d03d1c1e50f
 	github.com/sirupsen/logrus v1.1.1 // indirect
 	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/spf13/cobra v0.0.3
+	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.2.2
 	github.com/tendermint/go-amino v0.14.1
 	github.com/tendermint/tendermint v0.27.3

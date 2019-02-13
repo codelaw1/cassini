@@ -25,6 +25,9 @@ func main() {
 		commands.NewEventsCommand(events, true),
 		commands.NewTxCommand(txHandler, false),
 		commands.NewResetCommand(resetHandler, false),
+
+		commands.NewTestCommand(fabrictest, false),
+
 		commands.NewVersionCommand(versioner, false))
 
 	if err := root.Execute(); err != nil {
