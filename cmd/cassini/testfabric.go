@@ -64,6 +64,20 @@ type options struct {
 	goPath               string
 }
 
+func init() {
+	opts = &options{
+		user:             "",
+		password:         "",
+		loggingLevel:     "ERROR",
+		channelID:        "",
+		orgIDsStr:        "",
+		chaincodeVersion: "v0",
+		iterations:       1,
+		concurrency:      1,
+		args:             getEmptyArgs(),
+	}
+}
+
 // CLIConfig overrides certain configuration values with those supplied on the command-line
 type CLIConfig struct {
 	core.ConfigProvider
@@ -127,7 +141,7 @@ func newInvokeAction() (*action.Action, error) {
 	flags.StringVar(&opts.chaincodeID, cliconfig.ChaincodeIDFlag, "examplecc", "")
 	flags.StringVar(&opts.channelID, cliconfig.ChannelIDFlag, "orgchannel", "")
 	flags.StringVar(&opts.peerURL, cliconfig.PeerURLFlag, "", "")
-	flags.StringVar(&opts.configFile, cliconfig.ConfigFileFlag, "../config/config_test_local.yaml", "")
+	flags.StringVar(&opts.configFile, cliconfig.ConfigFileFlag, "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml", "")
 	flags.StringVar(&opts.args, cliconfig.ArgsFlag, "{\"Func\":\"move\",\"Args\":[\"A\",\"B\",\"1\"]}", "")
 	flags.IntVar(&opts.maxAttempts, cliconfig.MaxAttemptsFlag, 3, "")
 	flags.Float64Var(&opts.backoffFactor, cliconfig.BackoffFactorFlag, 2, "")
@@ -141,12 +155,16 @@ func newInvokeAction() (*action.Action, error) {
 	flags.BoolVar(&opts.printPayloadOnly, cliconfig.PrintPayloadOnlyFlag, true, "")
 	flags.IntVar(&opts.concurrency, cliconfig.ConcurrencyFlag, 1, "")
 
-	action := action.Action{}
-	err := action.Initialize(flags)
+	a := action.Action{}
+	err := a.Initialize(flags)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println("CryptoConfigPath:" + a.EndpointConfig().CryptoConfigPath())
 
-	fmt.Println("CryptoConfigPath:" + action.EndpointConfig().CryptoConfigPath())
+	}
 
-	return &action, err
+	return &a, err
 }
 
 func invokechaincode(a *action.Action) error {

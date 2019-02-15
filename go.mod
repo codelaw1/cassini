@@ -23,7 +23,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.4.1 // indirect
-	github.com/hyperledger/fabric-sdk-go v1.0.0-alpha4
+	github.com/hyperledger/fabric-sdk-go v0.0.0-20181205141928-05ffa0a5ae5d
 	github.com/jonboulle/clockwork v0.1.0 // indirect
 	github.com/miekg/pkcs11 v0.0.0-20181204074848-79c216b7cb4d // indirect
 	github.com/nats-io/gnatsd v1.3.0 // indirect
