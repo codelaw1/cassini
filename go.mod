@@ -14,12 +14,8 @@ require (
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20181024230925-c65c006176ff // indirect
 	github.com/google/btree v0.0.0-20180124185431-e89373fe6b4a // indirect
+	github.com/google/certificate-transparency-go v1.0.21 // indirect
 	github.com/gorilla/websocket v1.4.0
-	github.com/google/certificate-transparency-go v1.0.21 // indirect
-<!--
-	github.com/google/certificate-transparency-go v1.0.21 // indirect
-	github.com/gorilla/websocket v1.2.0
-	-->
 	github.com/grpc-ecosystem/go-grpc-middleware v1.0.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.4.1 // indirect
