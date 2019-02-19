@@ -6,13 +6,13 @@ import (
 
 	"context"
 	"fmt"
-	//action "github.com/QOSGroup/cassini/adapter/action"
+	action "github.com/QOSGroup/cassini/adapter/action"
 	cliconfig "github.com/QOSGroup/cassini/adapter/action/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/core"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/pkg/errors"
-	action "github.com/securekey/fabric-examples/fabric-cli/cmd/fabric-cli/action"
+	//action "github.com/securekey/fabric-examples/fabric-cli/cmd/fabric-cli/action"
 	"github.com/securekey/fabric-examples/fabric-cli/cmd/fabric-cli/chaincode/invoketask"
 	"github.com/securekey/fabric-examples/fabric-cli/cmd/fabric-cli/executor"
 	"github.com/spf13/pflag"
@@ -173,6 +173,8 @@ func newInvokeAction() (*action.Action, error) {
 }
 
 func invokechaincode(a *action.Action) error {
+	//just test
+	fmt.Println("4.CryptoConfigPath:" + a.EndpointConfig().CryptoConfigPath())
 	channelClient, err := a.ChannelClient()
 	if err != nil {
 		return errors.Errorf("Error getting channel client: %v", err)
