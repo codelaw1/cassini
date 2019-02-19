@@ -7,7 +7,9 @@ import (
 
 func addtestFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&config.GetConfig().ConfigFile, "config", "./config/config_fabric_test.yaml", "config file path")
+
 	//cmd.Flags().StringVar(&config.GetConfig().LogConfigFile, "log", "./config/log.conf", "log config file path")
+
 }
 
 func NewTestCommand(run Runner, isKeepRunning bool) *cobra.Command {
