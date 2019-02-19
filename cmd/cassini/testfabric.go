@@ -78,7 +78,6 @@ func init() {
 	}
 }
 
-
 // CLIConfig overrides certain configuration values with those supplied on the command-line
 type CLIConfig struct {
 	core.ConfigProvider
@@ -88,7 +87,7 @@ type CLIConfig struct {
 
 var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error) {
 
-	log.Info("Starting cassini...")
+	log.Info("2.Starting fabrictest...")
 
 	a, err := newInvokeAction()
 	defer a.Terminate()
@@ -162,8 +161,11 @@ func newInvokeAction() (*action.Action, error) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println("CryptoConfigPath:" + a.EndpointConfig().CryptoConfigPath())
-
+		fmt.Println("3.CryptoConfigPath:" + a.EndpointConfig().CryptoConfigPath())
+		//just test
+		flags.VisitAll(func(f *pflag.Flag) {
+			fmt.Println(f.Name, f.Value, f.DefValue)
+		})
 	}
 
 	return &a, err

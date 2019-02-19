@@ -266,7 +266,7 @@ func InitConfig(flags *pflag.FlagSet) error {
 
 	cnfg := config.FromFile(opts.configFile)
 	//just test
-	fmt.Println("configFile:" + opts.configFile)
+	fmt.Println("1.configFile:" + opts.configFile)
 	instance.ConfigProvider = cnfg
 
 	return nil
