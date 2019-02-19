@@ -141,7 +141,7 @@ func newInvokeAction() (*action.Action, error) {
 	flags.StringVar(&opts.chaincodeID, cliconfig.ChaincodeIDFlag, "examplecc", "")
 	flags.StringVar(&opts.channelID, cliconfig.ChannelIDFlag, "orgchannel", "")
 	flags.StringVar(&opts.peerURL, cliconfig.PeerURLFlag, "", "")
-	flags.StringVar(&opts.configFile, cliconfig.ConfigFileFlag, "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml", "")
+	//flags.StringVar(&opts.configFile, cliconfig.ConfigFileFlag, "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml", "")
 
 	flags.StringVar(&opts.args, cliconfig.ArgsFlag, "{\"Func\":\"move\",\"Args\":[\"A\",\"B\",\"1\"]}", "")
 	flags.IntVar(&opts.maxAttempts, cliconfig.MaxAttemptsFlag, 3, "")
