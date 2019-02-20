@@ -1,6 +1,7 @@
 module github.com/QOSGroup/cassini
 
 require (
+	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/QOSGroup/qbase v0.0.10
 	github.com/QOSGroup/qos v0.0.4-0.20190108073207-1fc21c111f3a
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
