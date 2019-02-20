@@ -24,7 +24,8 @@ const (
 	ordererOrgName = "OrdererOrg"
 )
 
-var ConfigTestFilename = "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml"
+//var ConfigTestFilename = "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml"
+var ConfigTestFilename = "config_test_local.yaml"
 
 var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error) {
 
