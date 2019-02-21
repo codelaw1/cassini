@@ -5,23 +5,28 @@ import (
 	"github.com/QOSGroup/cassini/log"
 
 	"context"
-	//action "github.com/QOSGroup/cassini/adapter/action"
-	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
+
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
-	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
+	packager "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/gopackager"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk/factory/defcore"
 	"github.com/hyperledger/fabric-sdk-go/test/integration"
-
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
+	"github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric/common/cauthdsl"
 )
 
 const (
-	channelID      = "mychannel"
-	orgName        = "Org1"
+	//channelID      = "mychannel"
+	//orgName        = "Org1"
+	//orgAdmin       = "Admin"
+	//ordererOrgName = "OrdererOrg"
+	channelID      = "orgchannel"
+	orgName        = "org1"
 	orgAdmin       = "Admin"
 	ordererOrgName = "OrdererOrg"
+	ccID           = "example_cc_e2e"
 )
 
 //var ConfigTestFilename = "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml"
@@ -39,40 +44,108 @@ var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error
 		log.Errorf("Failed to create new SDK: %s", err)
 	}
 	defer sdk.Close()
+	log.Info("3.fabsdk created")
 
 	//clientContext allows creation of transactions using the supplied identity as the credential.
-	clientContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(ordererOrgName))
-
-	resMgmtClient, err := resmgmt.New(clientContext)
-	if err != nil {
-		log.Errorf("Failed to create channel management client: %s", err)
-	}
+	//clientContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(ordererOrgName))
+	//
+	//resMgmtClient, err := resmgmt.New(clientContext)
+	//if err != nil {
+	//	log.Errorf("Failed to create channel management client: %s", err)
+	//}
+	//log.Info("4.resMgmtClient created")
 
 	//create channel
-	mspClient, err := mspclient.New(sdk.Context(), mspclient.WithOrg(orgName))
+	//mspClient, err := mspclient.New(sdk.Context(), mspclient.WithOrg(orgName))
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//adminIdentity, err := mspClient.GetSigningIdentity(orgAdmin)
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//req := resmgmt.SaveChannelRequest{ChannelID: channelID,
+	//	ChannelConfigPath: integration.GetChannelConfigPath(channelID + ".tx"),
+	//	SigningIdentities: []msp.SigningIdentity{adminIdentity}}
+	//txID, err := resMgmtClient.SaveChannel(req, resmgmt.WithRetry(retry.DefaultResMgmtOpts), resmgmt.WithOrdererEndpoint("orderer.example.com"))
+	//if err != nil {
+	//	log.Errorf("create channel error:", err)
+	//} else {
+	//	log.Infof("create channel txid:", txID)
+	//}
+
+	//prepare context
+	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
+
+	// Org resource management client
+	orgResMgmt, err := resmgmt.New(adminContext)
 	if err != nil {
-		log.Error(err)
+		log.Errorf("Failed to create new resource management client: %s", err)
 	}
-	adminIdentity, err := mspClient.GetSigningIdentity(orgAdmin)
-	if err != nil {
-		log.Error(err)
+	log.Info("4.orgResMgmt created")
+
+	// Org peers join channel
+	if err = orgResMgmt.JoinChannel(channelID, resmgmt.WithRetry(retry.DefaultResMgmtOpts), resmgmt.WithOrdererEndpoint("orderer.example.com")); err != nil {
+		log.Errorf("Org peers failed to JoinChannel: %s", err)
 	}
-	req := resmgmt.SaveChannelRequest{ChannelID: channelID,
-		ChannelConfigPath: integration.GetChannelConfigPath(channelID + ".tx"),
-		SigningIdentities: []msp.SigningIdentity{adminIdentity}}
-	txID, err := resMgmtClient.SaveChannel(req, resmgmt.WithRetry(retry.DefaultResMgmtOpts), resmgmt.WithOrdererEndpoint("orderer.example.com"))
+	log.Info("5.peers joined channel")
+
+	createCC(orgResMgmt)
+
+	//prepare channel client context using client context
+	clientChannelContext := sdk.ChannelContext(channelID, fabsdk.WithUser("User1"), fabsdk.WithOrg(orgName))
+	// Channel client is used to query and execute transactions (Org1 is default org)
+	client, err := channel.New(clientChannelContext)
 	if err != nil {
-		log.Errorf("create channel error:", err)
-	} else {
-		log.Infof("create channel txid:", txID)
+		log.Errorf("Failed to create new channel client: %s", err)
 	}
 
+	existingValue := queryCC(client)
+	log.Infof("existingValue:", existingValue)
+
 	return
+}
+
+func queryCC(client *channel.Client, targetEndpoints ...string) []byte {
+	response, err := client.Query(channel.Request{ChaincodeID: ccID, Fcn: "invoke", Args: integration.ExampleCCDefaultQueryArgs()},
+		channel.WithRetry(retry.DefaultChannelOpts),
+		channel.WithTargetEndpoints(targetEndpoints...),
+	)
+	if err != nil {
+		log.Errorf("Failed to query funds: %s", err)
+	}
+	return response.Payload
 }
 
 // CustomCryptoSuiteProviderFactory is will provide custom cryptosuite (bccsp.BCCSP)
 type CustomCryptoSuiteProviderFactory struct {
 	defcore.ProviderFactory
+}
+
+func createCC(orgResMgmt *resmgmt.Client) {
+	ccPkg, err := packager.NewCCPackage("github.com/example_cc", integration.GetDeployPath())
+	if err != nil {
+		log.Error(err)
+	}
+	// Install example cc to org peers
+	installCCReq := resmgmt.InstallCCRequest{Name: ccID, Path: "github.com/example_cc", Version: "0", Package: ccPkg}
+	_, err = orgResMgmt.InstallCC(installCCReq, resmgmt.WithRetry(retry.DefaultResMgmtOpts))
+	if err != nil {
+		log.Error(err)
+	}
+	// Set up chaincode policy
+	ccPolicy := cauthdsl.SignedByAnyMember([]string{"Org1MSP"})
+	// Org resource manager will instantiate 'example_cc' on channel
+	resp, err := orgResMgmt.InstantiateCC(
+		channelID,
+		resmgmt.InstantiateCCRequest{Name: ccID, Path: "github.com/example_cc", Version: "0", Args: integration.ExampleCCInitArgs(), Policy: ccPolicy},
+		resmgmt.WithRetry(retry.DefaultResMgmtOpts),
+	)
+	if err != nil {
+		log.Error(err)
+	} else {
+		log.Infof("6.createCC resp.TransactionID:", resp.TransactionID)
+	}
 }
 
 func newInvokeAction() {
