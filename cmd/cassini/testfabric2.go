@@ -7,8 +7,10 @@ import (
 	"context"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	packager "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/gopackager"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
@@ -47,32 +49,32 @@ var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error
 	log.Info("3.fabsdk created")
 
 	//clientContext allows creation of transactions using the supplied identity as the credential.
-	//clientContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(ordererOrgName))
-	//
-	//resMgmtClient, err := resmgmt.New(clientContext)
-	//if err != nil {
-	//	log.Errorf("Failed to create channel management client: %s", err)
-	//}
-	//log.Info("4.resMgmtClient created")
+	clientContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(ordererOrgName))
+
+	resMgmtClient, err := resmgmt.New(clientContext)
+	if err != nil {
+		log.Errorf("Failed to create channel management client: %s", err)
+	}
+	log.Info("4.resMgmtClient created")
 
 	//create channel
-	//mspClient, err := mspclient.New(sdk.Context(), mspclient.WithOrg(orgName))
-	//if err != nil {
-	//	log.Error(err)
-	//}
-	//adminIdentity, err := mspClient.GetSigningIdentity(orgAdmin)
-	//if err != nil {
-	//	log.Error(err)
-	//}
-	//req := resmgmt.SaveChannelRequest{ChannelID: channelID,
-	//	ChannelConfigPath: integration.GetChannelConfigPath(channelID + ".tx"),
-	//	SigningIdentities: []msp.SigningIdentity{adminIdentity}}
-	//txID, err := resMgmtClient.SaveChannel(req, resmgmt.WithRetry(retry.DefaultResMgmtOpts), resmgmt.WithOrdererEndpoint("orderer.example.com"))
-	//if err != nil {
-	//	log.Errorf("create channel error:", err)
-	//} else {
-	//	log.Infof("create channel txid:", txID)
-	//}
+	mspClient, err := mspclient.New(sdk.Context(), mspclient.WithOrg(orgName))
+	if err != nil {
+		log.Error(err)
+	}
+	adminIdentity, err := mspClient.GetSigningIdentity(orgAdmin)
+	if err != nil {
+		log.Error(err)
+	}
+	req := resmgmt.SaveChannelRequest{ChannelID: channelID,
+		ChannelConfigPath: integration.GetChannelConfigPath(channelID + ".tx"),
+		SigningIdentities: []msp.SigningIdentity{adminIdentity}}
+	txID, err := resMgmtClient.SaveChannel(req, resmgmt.WithRetry(retry.DefaultResMgmtOpts), resmgmt.WithOrdererEndpoint("orderer.example.com"))
+	if err != nil {
+		log.Errorf("create channel error:", err)
+	} else {
+		log.Infof("create channel txid:", txID)
+	}
 
 	//prepare context
 	adminContext := sdk.Context(fabsdk.WithUser(orgAdmin), fabsdk.WithOrg(orgName))
@@ -101,7 +103,7 @@ var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error
 	}
 
 	existingValue := queryCC(client)
-	log.Infof("existingValue:", existingValue)
+	log.Infof("7.existingValue:", existingValue)
 
 	return
 }
