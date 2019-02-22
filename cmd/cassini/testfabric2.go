@@ -10,6 +10,7 @@ import (
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/errors/retry"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	packager "github.com/hyperledger/fabric-sdk-go/pkg/fab/ccpackager/gopackager"
@@ -17,6 +18,8 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk/factory/defcore"
 	"github.com/hyperledger/fabric-sdk-go/test/integration"
 	"github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric/common/cauthdsl"
+	"strconv"
+	"time"
 )
 
 const (
@@ -34,9 +37,9 @@ const (
 //var ConfigTestFilename = "/root/go/pkg/mod/github.com/securekey/fabric-examples@v0.0.0-20190128203140-4d03d1c1e50f/fabric-cli/test/fixtures/config/config_test_local.yaml"
 var ConfigTestFilename = "config_test_local.yaml"
 
-var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error) {
+var fabricInit = func(conf *config.Config) (cancel context.CancelFunc, err error) {
 
-	log.Info("2.Starting fabrictest...")
+	log.Info("2.Starting fabricinit...")
 
 	//var configOpt core.ConfigProvider
 	configOpt := fconfig.FromFile(integration.GetConfigPath(ConfigTestFilename))
@@ -106,6 +109,90 @@ var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error
 	log.Infof("7.existingValue:", existingValue)
 
 	return
+}
+
+var fabrictest = func(conf *config.Config) (cancel context.CancelFunc, err error) {
+
+	log.Info("2.Starting fabrictest...")
+
+	//var configOpt core.ConfigProvider
+	configOpt := fconfig.FromFile(integration.GetConfigPath(ConfigTestFilename))
+	sdkOpts := fabsdk.WithCorePkg(&CustomCryptoSuiteProviderFactory{})
+	sdk, err := fabsdk.New(configOpt, sdkOpts)
+	if err != nil {
+		log.Errorf("Failed to create new SDK: %s", err)
+	}
+	defer sdk.Close()
+	log.Info("3.fabsdk created")
+
+	//prepare channel client context using client context
+	clientChannelContext := sdk.ChannelContext(channelID, fabsdk.WithUser("User1"), fabsdk.WithOrg(orgName))
+	// Channel client is used to query and execute transactions (Org1 is default org)
+	client, err := channel.New(clientChannelContext)
+	if err != nil {
+		log.Errorf("Failed to create new channel client: %s", err)
+	}
+
+	log.Info("3.fabsdk created")
+
+	existingValue := queryCC(client)
+	log.Infof("4.existingValue:", existingValue)
+
+	ccEvent := moveFunds(client)
+	// Verify move funds transaction result on the same peer where the event came from.
+	verifyFundsIsMoved(client, existingValue, ccEvent)
+
+	return
+}
+
+func moveFunds(client *channel.Client) *fab.CCEvent {
+
+	eventID := "test([a-zA-Z]+)"
+	// Register chaincode event (pass in channel which receives event details when the event is complete)
+	reg, notifier, err := client.RegisterChaincodeEvent(ccID, eventID)
+	if err != nil {
+		log.Errorf("Failed to register cc event: %s", err)
+	}
+	defer client.UnregisterChaincodeEvent(reg)
+
+	// Move funds
+	executeCC(client)
+
+	var ccEvent *fab.CCEvent
+	select {
+	case ccEvent = <-notifier:
+		log.Errorf("Received CC event: %#v\n", ccEvent)
+	case <-time.After(time.Second * 20):
+		log.Errorf("Did NOT receive CC event for eventId(%s)\n", eventID)
+	}
+
+	return ccEvent
+}
+
+func verifyFundsIsMoved(client *channel.Client, value []byte, ccEvent *fab.CCEvent) {
+
+	newValue := queryCC(client, ccEvent.SourceURL)
+	valueInt, err := strconv.Atoi(string(value))
+	if err != nil {
+		log.Error(err.Error())
+	}
+	valueAfterInvokeInt, err := strconv.Atoi(string(newValue))
+	if err != nil {
+		log.Error(err.Error())
+	}
+	if valueInt+1 != valueAfterInvokeInt {
+		log.Errorf("Execute failed. Before: %s, after: %s", value, newValue)
+	} else {
+		log.Info("funds is moved")
+	}
+}
+
+func executeCC(client *channel.Client) {
+	_, err := client.Execute(channel.Request{ChaincodeID: ccID, Fcn: "invoke", Args: integration.ExampleCCDefaultTxArgs()},
+		channel.WithRetry(retry.DefaultChannelOpts))
+	if err != nil {
+		log.Errorf("Failed to move funds: %s", err)
+	}
 }
 
 func queryCC(client *channel.Client, targetEndpoints ...string) []byte {
